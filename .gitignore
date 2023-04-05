@@ -1,0 +1,16 @@
+*.iml
+.gradle
+local.properties
+.idea/
+.run/
+build/
+.DS_Store
+/captures
+/testdata
+/kotlin-js-store
+.externalNativeBuild
+.cxx
+*.jks
+*.keystore
+signing.properties
+.directory
