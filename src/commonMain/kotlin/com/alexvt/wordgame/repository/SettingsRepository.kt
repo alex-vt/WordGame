@@ -20,7 +20,7 @@ class SettingsRepository(
         isPlayer1computer = false,
         isPlayer2computer = true,
         computerMaxWordLength = 5,
-        computerMaxVocabularyNormalizedSize = 0.1,
+        computerMaxVocabularyNormalizedSize = 0.12, // todo unify with DifficultyParams
         theme = ThemeRecord(
             color = ThemeColors(
                 background = BackgroundColors(
