@@ -5,14 +5,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,6 +25,7 @@ import com.alexvt.wordgame.viewmodel.PauseMenuViewModel
 import com.alexvt.wordgame.viewui.common.Fonts
 import com.alexvt.wordgame.viewui.common.WindowLifecycleEnvironment
 import moe.tlaster.precompose.ui.viewModel
+import kotlin.math.roundToInt
 
 @Composable
 fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvironment) {
@@ -50,7 +45,7 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
                 fontFamily = Fonts.NotoSans.get(),
             )
             Text(
-                text = " • update 2",
+                text = " • update 3",
                 color = Color(uiState.theme.color.text.dim),
                 fontSize = uiState.theme.font.size.small.sp,
                 fontFamily = Fonts.NotoSans.get(),
@@ -243,84 +238,215 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
     }
     Spacer(Modifier.height(8.dp))
 
-    Text(
-        text = "Computer Difficulty",
-        color = Color(uiState.theme.color.text.normal),
-        fontSize = uiState.theme.font.size.normal.sp,
-        fontFamily = Fonts.NotoSans.get(),
-        modifier = Modifier.fillMaxWidth(),
-    )
-    val difficultyButtons = remember { listOf("Easy", "Medium", "Hard", "Ultra") }
     Row(
-        Modifier.height(45.dp).offset((-3).dp, 0.dp).fillMaxWidth()
-            .offset(3.dp, 0.dp) // compensating offsets
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val selectedIndex = uiState.computerDifficultySelectionIndex
+        Text(
+            text = "Computer Difficulty",
+            color = Color(uiState.theme.color.text.normal),
+            fontSize = uiState.theme.font.size.normal.sp,
+            fontFamily = Fonts.NotoSans.get(),
+        )
         val cornerRadius = 5.dp
-
-        difficultyButtons.forEachIndexed { buttonIndex, buttonText ->
-            OutlinedButton(
-                modifier = Modifier.offset((-1 * buttonIndex).dp, 0.dp)
-                    .weight(buttonText.length + 2f) // +constant for lesser bias to proportion
-                    .zIndex(if (selectedIndex == buttonIndex) 1f else 0f),
-                onClick = {
-                    viewModel.onDifficultySelection(buttonIndex)
-                },
-                shape = when (buttonIndex) {
-                    // left outer button
-                    0 -> RoundedCornerShape(
-                        topStart = cornerRadius,
-                        topEnd = 0.dp,
-                        bottomStart = cornerRadius,
-                        bottomEnd = 0.dp
-                    )
-                    // right outer button
-                    difficultyButtons.size - 1 -> RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = cornerRadius,
-                        bottomStart = 0.dp,
-                        bottomEnd = cornerRadius
-                    )
-                    // middle button
-                    else -> RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 0.dp,
-                        bottomStart = 0.dp,
-                        bottomEnd = 0.dp
-                    )
-                },
-                border = BorderStroke(
-                    1.dp,
-                    Color(
-                        with(uiState.theme.color.border) {
-                            if (selectedIndex == buttonIndex) selected else unselected
-                        }
-                    )
-                ),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    backgroundColor = Color(
-                        with(uiState.theme.color.background) {
-                            if (selectedIndex == buttonIndex) clickable else unselected
-                        }
-                    )
-                ),
-                contentPadding = PaddingValues(0.dp),
-            ) {
-                Text(
-                    text = buttonText,
-                    fontSize = uiState.theme.font.size.normal.sp,
-                    color = Color(
-                        with(uiState.theme.color.text) {
-                            if (selectedIndex == buttonIndex) normal else inactive
-                        }
-                    ),
-                    fontFamily = Fonts.NotoSans.get(),
-                    modifier = Modifier
+        OutlinedButton(
+            modifier = Modifier.height(26.dp),
+            onClick = {
+                viewModel.onCustomDifficultyModeClick()
+            },
+            shape = RoundedCornerShape(cornerRadius),
+            border = BorderStroke(
+                1.dp,
+                Color(
+                    with(uiState.theme.color.border) {
+                        if (uiState.isComputerDifficultyCustom) selected else unselected
+                    }
                 )
-            }
+            ),
+            colors = ButtonDefaults.outlinedButtonColors(
+                backgroundColor = Color(
+                    with(uiState.theme.color.background) {
+                        if (uiState.isComputerDifficultyCustom) clickable else unselected
+                    }
+                )
+            ),
+            contentPadding = PaddingValues(0.dp),
+        ) {
+            Text(
+                modifier = Modifier.padding(horizontal = 5.dp),
+                text = if (uiState.isComputerDifficultyCustom) "Reset" else "Custom",
+                fontSize = uiState.theme.font.size.small.sp,
+                color = Color(
+                    with(uiState.theme.color.text) {
+                        if (uiState.isComputerDifficultyCustom) normal else inactive
+                    }
+                ),
+                fontFamily = Fonts.NotoSans.get(),
+            )
         }
     }
-    Spacer(Modifier.height(8.dp))
+    if (uiState.isComputerDifficultyCustom) {
+        Row(
+            Modifier.fillMaxWidth().height(25.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                modifier = Modifier.width(115.dp),
+                text = "Vocabulary",
+                fontSize = uiState.theme.font.size.small.sp,
+                color = Color(uiState.theme.color.text.dim),
+                fontFamily = Fonts.NotoSans.get(),
+            )
+            val sliderPosition = remember {
+                mutableStateOf(uiState.customDifficultyVocabularySliderValue.toFloat())
+            }
+            com.alexvt.wordgame.platform.Slider( // androidx.compose.material.Slider w. platform fix
+                modifier = Modifier.weight(1f),
+                sliderValueState = sliderPosition,
+                valueRange = 5f..100f,
+                steps = 20,
+                onValueChange = {
+                    // fix for steps not being respected
+                    val step = 5f
+                    sliderPosition.value = (it / step).roundToInt() * step
+                },
+                onValueChangeFinished = {
+                    viewModel.onCustomDifficultyVocabularySelection(
+                        maxVocabularySliderValue = sliderPosition.value.toInt()
+                    )
+                },
+                thumbColor = Color(uiState.theme.color.border.selected),
+                activeTrackColor = Color(uiState.theme.color.border.neutral),
+                inactiveTrackColor = Color(uiState.theme.color.background.unselected),
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent,
+            )
+            Text(
+                modifier = Modifier.width(40.dp).padding(start = 2.dp),
+                text = "${sliderPosition.value.toInt()}%",
+                fontSize = uiState.theme.font.size.small.sp,
+                color = Color(uiState.theme.color.text.normal),
+                fontFamily = Fonts.NotoSans.get(),
+            )
+        }
+        Row(
+            Modifier.fillMaxWidth().height(25.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                modifier = Modifier.width(115.dp),
+                text = "Max word length",
+                fontSize = uiState.theme.font.size.small.sp,
+                color = Color(uiState.theme.color.text.dim),
+                fontFamily = Fonts.NotoSans.get(),
+            )
+            val sliderPosition = remember {
+                mutableStateOf(uiState.customDifficultyMaxWordLengthSliderValue.toFloat())
+            }
+            com.alexvt.wordgame.platform.Slider( // androidx.compose.material.Slider w. platform fix
+                modifier = Modifier.weight(1f),
+                sliderValueState = sliderPosition,
+                valueRange = 3f..15f,
+                steps = 13,
+                onValueChange = {
+                    sliderPosition.value = it
+                },
+                onValueChangeFinished = {
+                    viewModel.onCustomDifficultyWordLengthSelection(
+                        maxWordLengthSliderValue = sliderPosition.value.toInt()
+                    )
+                },
+                thumbColor = Color(uiState.theme.color.border.selected),
+                activeTrackColor = Color(uiState.theme.color.border.neutral),
+                inactiveTrackColor = Color(uiState.theme.color.background.unselected),
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent,
+            )
+            Text(
+                modifier = Modifier.width(40.dp).padding(start = 2.dp),
+                text = "${sliderPosition.value.toInt()}",
+                fontSize = uiState.theme.font.size.small.sp,
+                color = Color(uiState.theme.color.text.normal),
+                fontFamily = Fonts.NotoSans.get(),
+            )
+        }
+        Spacer(Modifier.height(3.dp))
+    } else {
+        val difficultyButtons = remember { listOf("Easy", "Medium", "Hard", "Ultra") }
+        Row(
+            Modifier.height(45.dp).offset((-3).dp, 0.dp).fillMaxWidth()
+                .offset(3.dp, 0.dp) // compensating offsets
+        ) {
+            val selectedIndex = uiState.computerDifficultySelectionIndex
+            val cornerRadius = 5.dp
+
+            difficultyButtons.forEachIndexed { buttonIndex, buttonText ->
+                OutlinedButton(
+                    modifier = Modifier.offset((-1 * buttonIndex).dp, 0.dp)
+                        .weight(buttonText.length + 2f) // +constant for lesser bias to proportion
+                        .zIndex(if (selectedIndex == buttonIndex) 1f else 0f),
+                    onClick = {
+                        viewModel.onDifficultySelection(buttonIndex)
+                    },
+                    shape = when (buttonIndex) {
+                        // left outer button
+                        0 -> RoundedCornerShape(
+                            topStart = cornerRadius,
+                            topEnd = 0.dp,
+                            bottomStart = cornerRadius,
+                            bottomEnd = 0.dp
+                        )
+                        // right outer button
+                        difficultyButtons.size - 1 -> RoundedCornerShape(
+                            topStart = 0.dp,
+                            topEnd = cornerRadius,
+                            bottomStart = 0.dp,
+                            bottomEnd = cornerRadius
+                        )
+                        // middle button
+                        else -> RoundedCornerShape(
+                            topStart = 0.dp,
+                            topEnd = 0.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        )
+                    },
+                    border = BorderStroke(
+                        1.dp,
+                        Color(
+                            with(uiState.theme.color.border) {
+                                if (selectedIndex == buttonIndex) selected else unselected
+                            }
+                        )
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = Color(
+                            with(uiState.theme.color.background) {
+                                if (selectedIndex == buttonIndex) clickable else unselected
+                            }
+                        )
+                    ),
+                    contentPadding = PaddingValues(0.dp),
+                ) {
+                    Text(
+                        text = buttonText,
+                        fontSize = uiState.theme.font.size.normal.sp,
+                        color = Color(
+                            with(uiState.theme.color.text) {
+                                if (selectedIndex == buttonIndex) normal else inactive
+                            }
+                        ),
+                        fontFamily = Fonts.NotoSans.get(),
+                        modifier = Modifier
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+    }
 
     Button(
         onClick = { viewModel.onNewGame() },

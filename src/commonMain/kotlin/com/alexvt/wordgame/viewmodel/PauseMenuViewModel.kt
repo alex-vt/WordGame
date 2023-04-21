@@ -22,7 +22,9 @@ class PauseMenuViewModelUseCases(
     val newGameUseCase: NewGameUseCase,
     val resumeGameUseCase: ResumeGameUseCase,
     val setGameTypeUseCase: SetGameTypeUseCase,
-    val setDifficultyUseCase: SetDifficultyUseCase,
+    val setPresetSelectableDifficultyUseCase: SetPresetSelectableDifficultyUseCase,
+    val setCustomDifficultyMaxWordLengthUseCase: SetCustomDifficultyMaxWordLengthUseCase,
+    val setCustomDifficultyMaxVocabularyUseCase: SetCustomDifficultyMaxVocabularyUseCase,
     val isCurrentGameLosableUseCase: IsCurrentGameLosableUseCase,
 )
 
@@ -35,6 +37,9 @@ class PauseMenuViewModel(
     data class UiState(
         val gameTypeSelectionIndex: Int,
         val computerDifficultySelectionIndex: Int,
+        val isComputerDifficultyCustom: Boolean,
+        val customDifficultyVocabularySliderValue: Int,
+        val customDifficultyMaxWordLengthSliderValue: Int,
         val isOngoingGameWarningVisible: Boolean,
         val theme: ThemeRecord,
     )
@@ -53,7 +58,29 @@ class PauseMenuViewModel(
     }
 
     fun onDifficultySelection(buttonIndex: Int) {
-        useCases.setDifficultyUseCase.execute(buttonIndex)
+        useCases.setPresetSelectableDifficultyUseCase.execute(buttonIndex)
+    }
+
+    fun onCustomDifficultyVocabularySelection(maxVocabularySliderValue: Int) {
+        useCases.setCustomDifficultyMaxVocabularyUseCase.execute(
+            maxVocabularyPercentage = maxVocabularySliderValue
+        )
+    }
+
+    fun onCustomDifficultyWordLengthSelection(maxWordLengthSliderValue: Int) {
+        useCases.setCustomDifficultyMaxWordLengthUseCase.execute(
+            maxWordLength = maxWordLengthSliderValue
+        )
+    }
+
+    fun onCustomDifficultyModeClick() {
+        if (getUiStateFlow().value.isComputerDifficultyCustom) {
+            // switching to standard, 2nd button
+            useCases.setPresetSelectableDifficultyUseCase.execute(difficultyLevelIndex = 1)
+        } else {
+            // switching to custom, settings other than any standard
+            useCases.setCustomDifficultyMaxVocabularyUseCase.execute(maxVocabularyPercentage = 20)
+        }
     }
 
     fun onBackToGame() {
@@ -72,7 +99,10 @@ class PauseMenuViewModel(
     private fun Settings.toUiState(): UiState =
         UiState(
             gameTypeSelectionIndex = gameType.ordinal,
-            computerDifficultySelectionIndex = gameDifficulty.ordinal,
+            computerDifficultySelectionIndex = presetSelectableDifficulty.ordinal,
+            isComputerDifficultyCustom = isCustom,
+            customDifficultyVocabularySliderValue = customDifficultyVocabularyPercentage,
+            customDifficultyMaxWordLengthSliderValue = customDifficultyMaxWordLength,
             isOngoingGameWarningVisible = useCases.isCurrentGameLosableUseCase.execute(),
             theme,
         )

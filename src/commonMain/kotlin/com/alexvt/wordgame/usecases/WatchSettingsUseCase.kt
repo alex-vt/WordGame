@@ -21,13 +21,17 @@ enum class GameDifficulty {
 
 data class Settings(
     val gameType: GameType,
-    val gameDifficulty: GameDifficulty,
+    val presetSelectableDifficulty: GameDifficulty,
+    val isCustom: Boolean,
+    val customDifficultyVocabularyPercentage: Int,
+    val customDifficultyMaxWordLength: Int,
     val theme: ThemeRecord,
 )
 
 @AppScope
 @Inject
 class WatchSettingsUseCase(
+    private val difficultyPresetsUseCase: GetDifficultyPresetsUseCase,
     private val settingsRepository: SettingsRepository
 ) {
 
@@ -46,13 +50,29 @@ class WatchSettingsUseCase(
                 isPlayer1computer && isPlayer2computer -> GameType.COMPUTER_VS_COMPUTER
                 else -> GameType.PLAYER_VS_COMPUTER
             },
-            gameDifficulty = when (computerMaxWordLength) {
-                4 -> GameDifficulty.EASY
-                5 -> GameDifficulty.MEDIUM
-                6 -> GameDifficulty.HARD
-                else -> GameDifficulty.ULTRA
-            }, // todo also use computerMaxVocabularyNormalizedSize
+            presetSelectableDifficulty = toPresetSelectableDifficulty(
+                default = GameDifficulty.MEDIUM
+            ),
+            isCustom = DifficultyParams(computerMaxWordLength, computerMaxVocabularyNormalizedSize)
+                    !in difficultyPresetsUseCase.execute(),
+            customDifficultyVocabularyPercentage = (computerMaxVocabularyNormalizedSize * 100.0)
+                .toInt(),
+            customDifficultyMaxWordLength = computerMaxWordLength,
             theme,
         )
+
+    private fun SettingsRecord.toPresetSelectableDifficulty(
+        default: GameDifficulty
+    ): GameDifficulty {
+        val difficultyPresets = difficultyPresetsUseCase.execute()
+        val indexOfPresetDifficultyParams = difficultyPresetsUseCase.execute().indexOf(
+            DifficultyParams(
+                maxWordLength = computerMaxWordLength,
+                maxVocabularyNormalizedSize = computerMaxVocabularyNormalizedSize
+            )
+        ).coerceAtMost(difficultyPresets.size - 1)
+        if (indexOfPresetDifficultyParams < 0) return default
+        return GameDifficulty.values()[indexOfPresetDifficultyParams]
+    }
 
 }
