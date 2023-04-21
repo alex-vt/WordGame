@@ -17,10 +17,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alexvt.wordgame.AppDependencies
+import com.alexvt.wordgame.platform.browseLink
 import com.alexvt.wordgame.platform.getImageBitmapFromResources
 import com.alexvt.wordgame.viewmodel.WordGameViewModel
 import com.alexvt.wordgame.viewui.common.Fonts
@@ -118,9 +121,9 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
         ) {
 
             // Notification message
-            Box(
+            Row(
                 Modifier.fillMaxWidth().padding(bottom = 4.dp),
-                contentAlignment = Alignment.Center,
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = uiState.notificationMessage,
@@ -128,9 +131,24 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                         Color(if (uiState.isNotificationError) error else dim)
                     },
                     fontSize = uiState.theme.font.size.normal.sp,
-                    textAlign = TextAlign.Center,
                     fontFamily = Fonts.NotoSans.get(),
                 )
+                val uriHandler = LocalUriHandler.current
+                if (uiState.notificationMessageLink.isNotBlank()) {
+                    Text(
+                        text = uiState.notificationMessageLink,
+                        color = Color(uiState.theme.color.text.dim),
+                        fontSize = uiState.theme.font.size.normal.sp,
+                        fontFamily = Fonts.NotoSans.get(),
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            browseLink(
+                                uriHandler,
+                                "https://en.wiktionary.org/wiki/${uiState.notificationMessageLink}#Noun"
+                            )
+                        },
+                    )
+                }
             }
 
             // Game board

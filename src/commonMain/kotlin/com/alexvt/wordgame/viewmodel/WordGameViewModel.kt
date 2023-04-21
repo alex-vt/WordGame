@@ -61,6 +61,7 @@ class WordGameViewModel(
         val isPlayer1iconComputer: Boolean,
         val isPlayer2iconComputer: Boolean,
         val notificationMessage: String,
+        val notificationMessageLink: String,
         val isNotificationError: Boolean,
         val statusMessage: String,
         val isKeyboardInactive: Boolean,
@@ -184,6 +185,11 @@ class WordGameViewModel(
                 gameState.playerTurn,
                 gameState.turnStage,
             ),
+            notificationMessageLink = getNotificationMessageLink(
+                gameState.board,
+                gameState.error,
+                gameState.turnStage,
+            ),
             statusMessage = getStatusMessage(
                 gameState.player1, gameState.player2, gameState.playerTurn, gameState.turnStage
             ),
@@ -247,7 +253,7 @@ class WordGameViewModel(
                 "New letter must be in the word"
             }
             error == Error.WORD_ALREADY_PLAYED -> {
-                "Already played: $wordOnBoard"
+                "Already played: "
             }
             error == Error.WORD_NOT_ALLOWED -> {
                 "Not allowed: $wordOnBoard"
@@ -259,7 +265,28 @@ class WordGameViewModel(
                         PlayerTurn.GAME_OVER, // player 2 finishes the game
                         PlayerTurn.PLAYER_1_TURN -> player2name
                     }
-                "$previousTurnPlayerName word was: $wordOnBoard"
+                "$previousTurnPlayerName word was: "
+            }
+            else -> ""
+        }
+    }
+
+    private fun getNotificationMessageLink(
+        board: Board,
+        error: Error,
+        turnStage: TurnStage,
+    ): String {
+        val wordOnBoard =
+            Word(board.getChosenLetterCellsInOrder()).getPlainText()
+        val isShowingLastTurn =
+            board.hasNewLetter() && board.getSelectedCellCount() == 0
+                    && turnStage != TurnStage.SELECTING_WORD
+        return when {
+            error == Error.WORD_ALREADY_PLAYED -> {
+                wordOnBoard
+            }
+            isShowingLastTurn -> {
+                wordOnBoard
             }
             else -> ""
         }
