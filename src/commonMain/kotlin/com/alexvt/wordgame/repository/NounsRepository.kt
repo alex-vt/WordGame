@@ -23,8 +23,7 @@ class NounsRepository {
     fun hasMatches(substring: String, usePartOfDictionary: Double): Boolean =
         commonSingleNounsByFrequency
             .take((usePartOfDictionary * commonSingleNounsByFrequency.size).roundToInt())
-            .filter { it.contains(substring) }
-            .isNotEmpty()
+            .any { it.contains(substring) }
 
     fun isAllowed(word: String, usePartOfDictionary: Double): Boolean =
         word in commonSingleNounsByFrequency

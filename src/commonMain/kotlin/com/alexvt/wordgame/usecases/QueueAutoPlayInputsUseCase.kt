@@ -24,8 +24,8 @@ class QueueAutoPlayInputsUseCase(
         beforeComputerMove()
 
         with(currentGameState) {
-            // to seed possible solutions, we make boards with each letter in every possible cell
-            // where a new letter can be, and each of the seeds is a potential 2 letter word seed
+            // seeds of possible solutions are 1 letter "words"
+            // made of a new letter (a to z) in each eligible empty cell
             val potentialWordSeeds =
                 board.cellRows.flatMapIndexed { rowIndex, rowCells ->
                     rowCells.flatMapIndexed { columnIndex, cell ->
@@ -41,19 +41,19 @@ class QueueAutoPlayInputsUseCase(
                             emptyList()
                         }
                     }
-                }.shuffled() // without bias to 'a' on top left
+                }.shuffled() // avoiding bias to 'a' on top left
 
             // progressively add 1 letter to possible solutions in any directions
             val usePartOfDictionary = getCurrentPlayer().computerMaxVocabularyNormalizedSize
             var potentialWords = potentialWordSeeds
             (1 until getCurrentPlayer().computerMaxWordLength).forEach { currentWordLength ->
                 // todo optimize / inject coroutine delays for single threaded platforms
-                potentialWords = potentialWords +
-                        potentialWords
-                            .filter { it.length == currentWordLength }
-                            .flatMap { it.getOneLetterLongerPotentialWords(board) }
-                            .filter { it.canBePartOfActualWord(usePartOfDictionary) }
-                            .shuffled() // without bias to top left cells
+                val potentialWordsOverCurrentLength = potentialWords
+                    .takeLastWhile { it.length == currentWordLength }
+                    .flatMap { it.getOneLetterLongerPotentialWords(board) }
+                    .filter { it.canBePartOfActualWord(usePartOfDictionary) }
+                    .shuffled() // avoiding bias to top left cells
+                potentialWords = potentialWords + potentialWordsOverCurrentLength
             }
 
             // finally the possible words are random but sorted by length, so we aim for the last
