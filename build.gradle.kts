@@ -55,6 +55,8 @@ kotlin {
                 )
 
                 api("moe.tlaster:precompose:1.3.15")
+
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
             }
         }
 

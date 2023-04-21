@@ -1,11 +1,13 @@
 package com.alexvt.wordgame.model
 
+@kotlinx.serialization.Serializable
 data class BorderColors(
     val unselected: Long,
     val neutral: Long,
     val selected: Long,
 )
 
+@kotlinx.serialization.Serializable
 data class TextColors(
     val normal: Long,
     val inactive: Long,
@@ -16,6 +18,7 @@ data class TextColors(
     val error: Long,
 )
 
+@kotlinx.serialization.Serializable
 data class BackgroundColors(
     val normal: Long,
     val clickable: Long,
@@ -23,12 +26,14 @@ data class BackgroundColors(
     val accent: Long,
 )
 
+@kotlinx.serialization.Serializable
 data class ThemeColors(
     val background: BackgroundColors,
     val text: TextColors,
     val border: BorderColors,
 )
 
+@kotlinx.serialization.Serializable
 data class FontSizes(
     val small: Int,
     val normal: Int,
@@ -37,15 +42,18 @@ data class FontSizes(
     val cell: Int,
 )
 
+@kotlinx.serialization.Serializable
 data class ThemeFonts(
     val size: FontSizes,
 )
 
+@kotlinx.serialization.Serializable
 data class ThemeRecord(
     val color: ThemeColors,
     val font: ThemeFonts,
 )
 
+@kotlinx.serialization.Serializable
 data class SettingsRecord(
     val isPlayer1computer: Boolean,
     val isPlayer2computer: Boolean,
