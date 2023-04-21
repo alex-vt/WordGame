@@ -313,7 +313,7 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
 
         // Keyboard
         Box {
-            Column {
+            Column(Modifier.alpha(if (uiState.isGameOverPopupMenuVisible) 0f else 1f)) {
                 Box {
                     Row {
                         "QWERTYUIOP".forEach { letter ->
