@@ -20,10 +20,9 @@ class NounsRepository {
             .shuffled()
             .first()
 
-    fun hasMatches(substring: String, usePartOfDictionary: Double): Boolean =
+    fun getMostCommon(usePartOfDictionary: Double): List<String> =
         commonSingleNounsByFrequency
             .take((usePartOfDictionary * commonSingleNounsByFrequency.size).roundToInt())
-            .any { it.contains(substring) }
 
     fun isAllowed(word: String, usePartOfDictionary: Double): Boolean =
         word in commonSingleNounsByFrequency

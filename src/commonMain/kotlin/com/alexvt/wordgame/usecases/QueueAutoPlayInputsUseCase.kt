@@ -24,40 +24,36 @@ class QueueAutoPlayInputsUseCase(
         beforeComputerMove()
 
         with(currentGameState) {
-            // seeds of possible solutions are 1 letter "words"
-            // made of a new letter (a to z) in each eligible empty cell
-            val potentialWordSeeds =
-                board.cellRows.flatMapIndexed { rowIndex, rowCells ->
-                    rowCells.flatMapIndexed { columnIndex, cell ->
-                        if (cell is EmptyCell && board.isCellNextToLetter(rowIndex, columnIndex)) {
-                            ('a'..'z').map { letter ->
-                                PotentialWord(
-                                    listOf(
-                                        WordLetter(letter, rowIndex, columnIndex, isNew = true)
-                                    )
-                                )
-                            }
-                        } else {
-                            emptyList()
-                        }
+            // For each letter to place in eligible places on board, we filter the nouns dictionary.
+            // Then each letter in all eligible places makes a seed list of possible words
+            // consisting from just that letter first, but eventually growing.
+            val allPotentialWords = ('a'..'z').flatMap { letter ->
+                val allUsedLetters = (board.getAllLetters() + letter).toSet()
+                val usedPartOfDictionary =
+                    nounsRepository.getMostCommon(
+                        usePartOfDictionary = getCurrentPlayer().computerMaxVocabularyNormalizedSize
+                    ).filter { dictionaryWord ->
+                        dictionaryWord.all { it in allUsedLetters }
                     }
-                }.shuffled() // avoiding bias to 'a' on top left
-
-            // progressively add 1 letter to possible solutions in any directions
-            val usePartOfDictionary = getCurrentPlayer().computerMaxVocabularyNormalizedSize
-            var potentialWords = potentialWordSeeds
-            (1 until getCurrentPlayer().computerMaxWordLength).forEach { currentWordLength ->
-                // todo optimize / inject coroutine delays for single threaded platforms
-                val potentialWordsOverCurrentLength = potentialWords
-                    .takeLastWhile { it.length == currentWordLength }
-                    .flatMap { it.getOneLetterLongerPotentialWords(board) }
-                    .filter { it.canBePartOfActualWord(usePartOfDictionary) }
-                    .shuffled() // avoiding bias to top left cells
-                potentialWords = potentialWords + potentialWordsOverCurrentLength
+                var letterPotentialWords = board.getSeedWordsForLetter(letter)
+                (1 until getCurrentPlayer().computerMaxWordLength).forEach { currentWordLength ->
+                    // todo optimize / inject coroutine delays for single threaded platforms
+                    val potentialWordsOverCurrentLength = letterPotentialWords
+                        .takeLastWhile { it.length == currentWordLength }
+                        .flatMap { it.getOneLetterLongerPotentialWords(board) }
+                        .filter { it.canBePartOfActualWord(usedPartOfDictionary) }
+                    letterPotentialWords = letterPotentialWords + potentialWordsOverCurrentLength
+                }
+                letterPotentialWords
             }
 
+            val shuffledPotentialWordsWithShortestFirst =
+                allPotentialWords.groupBy { it.length }.toList()
+                    .sortedBy { (length, _) -> length }
+                    .flatMap { (_, wordsOfLength) -> wordsOfLength.shuffled() }
+
             // finally the possible words are random but sorted by length, so we aim for the last
-            potentialWords.lastOrNull { potentialWord ->
+            shuffledPotentialWordsWithShortestFirst.lastOrNull { potentialWord ->
                 checkIfWordAllowedUseCase.execute(
                     word = potentialWord.toString(),
                     usePartOfDictionary = getCurrentPlayer().computerMaxVocabularyNormalizedSize
@@ -82,6 +78,35 @@ class QueueAutoPlayInputsUseCase(
         }
     }
 
+    private fun Board.getSeedWordsForLetter(letter: Char): List<PotentialWord> {
+        return cellRows.flatMapIndexed { rowIndex, rowCells ->
+            rowCells.flatMapIndexed { columnIndex, cell ->
+                if (cell is EmptyCell && isCellNextToLetter(rowIndex, columnIndex)) {
+                    listOf(
+                        PotentialWord(
+                            listOf(
+                                WordLetter(letter, rowIndex, columnIndex, isNew = true)
+                            )
+                        )
+                    )
+                } else {
+                    emptyList()
+                }
+            }
+        }
+    }
+
+    private fun Board.getAllLetters(): List<Char> =
+        cellRows.flatMapIndexed { rowIndex, rowCells ->
+            rowCells.flatMapIndexed { columnIndex, cell ->
+                if (cell is LetterCell) {
+                    listOf(cell.letter)
+                } else {
+                    emptyList()
+                }
+            }
+        }
+
     private fun GameState.getCurrentPlayer(): Player =
         when (playerTurn) {
             PlayerTurn.PLAYER_1_TURN -> player1
@@ -102,8 +127,10 @@ class QueueAutoPlayInputsUseCase(
         }
     }
 
-    private fun PotentialWord.canBePartOfActualWord(usePartOfDictionary: Double): Boolean =
-        nounsRepository.hasMatches(substring = toString(), usePartOfDictionary)
+    private fun PotentialWord.canBePartOfActualWord(usedPartOfDictionary: List<String>): Boolean {
+        val potentialWordText = toString()
+        return usedPartOfDictionary.any { potentialWordText in it }
+    }
 
     private fun PotentialWord.getOneLetterLongerPotentialWords(board: Board): List<PotentialWord> {
         val (startRow, startColumn) = this.wordLetters.first().run { row to column }
