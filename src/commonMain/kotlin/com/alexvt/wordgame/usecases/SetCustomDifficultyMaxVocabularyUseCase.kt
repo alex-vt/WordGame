@@ -12,9 +12,13 @@ class SetCustomDifficultyMaxVocabularyUseCase(
 
     fun execute(maxVocabularyPercentage: Int) {
         with(settingsRepository) {
+            val oldSettings = readSettings()
             updateSettings(
-                readSettings().copy(
-                    computerMaxVocabularyNormalizedSize = maxVocabularyPercentage / 100.0,
+                oldSettings.copy(
+                    computerDifficulty = oldSettings.computerDifficulty.copy(
+                        maxVocabularyNormalizedSize = maxVocabularyPercentage / 100.0,
+                        isCustom = true,
+                    )
                 )
             )
         }

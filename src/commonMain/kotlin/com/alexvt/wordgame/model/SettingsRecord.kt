@@ -54,10 +54,16 @@ data class ThemeRecord(
 )
 
 @kotlinx.serialization.Serializable
+data class DifficultyRecord(
+    val maxWordLength: Int,
+    val maxVocabularyNormalizedSize: Double,
+    val isCustom: Boolean,
+)
+
+@kotlinx.serialization.Serializable
 data class SettingsRecord(
     val isPlayer1computer: Boolean,
     val isPlayer2computer: Boolean,
-    val computerMaxWordLength: Int,
-    val computerMaxVocabularyNormalizedSize: Double,
+    val computerDifficulty: DifficultyRecord,
     val theme: ThemeRecord,
 )

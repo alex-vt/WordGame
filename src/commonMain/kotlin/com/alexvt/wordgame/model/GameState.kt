@@ -5,8 +5,6 @@ data class Word(val letterCells: List<LetterCell>)
 data class Player(
     val playedWords: List<Word>,
     val isComputer: Boolean,
-    val computerMaxWordLength: Int,
-    val computerMaxVocabularyNormalizedSize: Double, // 0.5: more common half of nouns, 1: all nouns
 )
 
 enum class PlayerTurn {
@@ -31,6 +29,8 @@ data class GameState(
     val player1: Player,
     val player2: Player,
     val playerTurn: PlayerTurn,
+    val computerMaxWordLength: Int,
+    val computerMaxVocabularyNormalizedSize: Double, // 0.5: more common half of nouns, 1: all nouns
     val turnStage: TurnStage,
     val error: Error,
     val queuedAutoPlayInputs: List<AutoPlayInput>,

@@ -12,9 +12,13 @@ class SetCustomDifficultyMaxWordLengthUseCase(
 
     fun execute(maxWordLength: Int) {
         with(settingsRepository) {
+            val oldSettings = readSettings()
             updateSettings(
-                readSettings().copy(
-                    computerMaxWordLength = maxWordLength,
+                oldSettings.copy(
+                    computerDifficulty = oldSettings.computerDifficulty.copy(
+                        maxWordLength = maxWordLength,
+                        isCustom = true,
+                    )
                 )
             )
         }

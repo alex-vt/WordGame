@@ -7,17 +7,19 @@ import me.tatarka.inject.annotations.Inject
 
 @AppScope
 @Inject
-class SetPresetSelectableDifficultyUseCase(
+class SetDefaultDifficultyUseCase(
     private val difficultyPresetRepository: DifficultyPresetRepository,
     private val settingsRepository: SettingsRepository,
 ) {
 
-    fun execute(difficultyLevelIndex: Int) {
+    fun execute(isToBeCustom: Boolean) {
         with(settingsRepository) {
             updateSettings(
                 readSettings().copy(
                     computerDifficulty = with(difficultyPresetRepository) {
-                        getDifficultyPresets().getOrElse(difficultyLevelIndex) {
+                        if (isToBeCustom) {
+                            getDefaultCustomDifficulty()
+                        } else {
                             getDefaultDifficultyPreset()
                         }
                     }

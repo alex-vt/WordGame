@@ -31,12 +31,12 @@ class QueueAutoPlayInputsUseCase(
                 val allUsedLetters = (board.getAllLetters() + letter).toSet()
                 val usedPartOfDictionary =
                     nounsRepository.getMostCommon(
-                        usePartOfDictionary = getCurrentPlayer().computerMaxVocabularyNormalizedSize
+                        usePartOfDictionary = computerMaxVocabularyNormalizedSize
                     ).filter { dictionaryWord ->
                         dictionaryWord.all { it in allUsedLetters }
                     }
                 var letterPotentialWords = board.getSeedWordsForLetter(letter)
-                (1 until getCurrentPlayer().computerMaxWordLength).forEach { currentWordLength ->
+                (1 until computerMaxWordLength).forEach { currentWordLength ->
                     // todo optimize / inject coroutine delays for single threaded platforms
                     val potentialWordsOverCurrentLength = letterPotentialWords
                         .takeLastWhile { it.length == currentWordLength }
@@ -56,7 +56,7 @@ class QueueAutoPlayInputsUseCase(
             shuffledPotentialWordsWithShortestFirst.lastOrNull { potentialWord ->
                 checkIfWordAllowedUseCase.execute(
                     word = potentialWord.toString(),
-                    usePartOfDictionary = getCurrentPlayer().computerMaxVocabularyNormalizedSize
+                    usePartOfDictionary = computerMaxVocabularyNormalizedSize
                 ) == Error.NONE
             }?.let { chosenWord ->
                 val chosenWordLetters = chosenWord.wordLetters

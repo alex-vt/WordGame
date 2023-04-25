@@ -1,8 +1,6 @@
 package com.alexvt.wordgame
 
-import com.alexvt.wordgame.repository.NavigationStateRepository
-import com.alexvt.wordgame.repository.NounsRepository
-import com.alexvt.wordgame.repository.StorageRepository
+import com.alexvt.wordgame.repository.*
 import com.alexvt.wordgame.viewmodel.MainNavigationViewModelUseCases
 import com.alexvt.wordgame.viewmodel.PauseMenuViewModelUseCases
 import com.alexvt.wordgame.viewmodel.WordGameViewModelUseCases
@@ -36,4 +34,12 @@ abstract class AppDependencies {
     @Provides
     protected fun storageRepository(): StorageRepository = StorageRepository()
 
+    @AppScope
+    @Provides
+    protected fun colorThemeRepository(): ColorThemeRepository = ColorThemeRepository()
+
+    @AppScope
+    @Provides
+    protected fun difficultyPresetRepository(): DifficultyPresetRepository =
+        DifficultyPresetRepository()
 }

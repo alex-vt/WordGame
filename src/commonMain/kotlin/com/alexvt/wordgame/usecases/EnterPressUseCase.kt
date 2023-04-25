@@ -58,8 +58,7 @@ class EnterPressUseCase(
         val selectedWord = Word(board.getChosenLetterCellsInOrder())
         val usePartOfDictionary =
             if (isCurrentPlayerComputerUseCase.execute()) {
-                (if (playerTurn == PlayerTurn.PLAYER_1_TURN) player1 else player2)
-                    .computerMaxVocabularyNormalizedSize
+                computerMaxVocabularyNormalizedSize
             } else {
                 1.0 // human players may use all of the dictionary
             }

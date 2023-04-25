@@ -2,10 +2,14 @@ package com.alexvt.wordgame.viewui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +49,7 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
                 fontFamily = Fonts.NotoSans.get(),
             )
             Text(
-                text = " • update 4",
+                text = " • update 5",
                 color = Color(uiState.theme.color.text.dim),
                 fontSize = uiState.theme.font.size.small.sp,
                 fontFamily = Fonts.NotoSans.get(),
@@ -63,6 +67,91 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
                     browseLink(uriHandler, "https://github.com/alex-vt/WordGame")
                 },
         )
+    }
+    Spacer(Modifier.height(12.dp))
+
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Theme:",
+            color = Color(uiState.theme.color.text.dim),
+            fontSize = uiState.theme.font.size.small.sp,
+            fontFamily = Fonts.NotoSans.get(),
+        )
+        Spacer(Modifier.width(8.dp))
+        Row(
+            Modifier.height(30.dp).fillMaxWidth().offset(3.dp, 0.dp) // compensating offsets
+        ) {
+            val cornerRadius = 5.dp
+            uiState.colorThemeOptions.forEachIndexed { themeIndex, colorThemeOption ->
+                OutlinedButton(
+                    modifier = Modifier.offset((-1 * themeIndex).dp, 0.dp)
+                        .weight(1f)
+                        .zIndex(if (colorThemeOption.isSelected) 1f else 0f),
+                    onClick = {
+                        viewModel.onColorThemeSelection(themeIndex)
+                    },
+                    shape = when (themeIndex) {
+                        // left outer button
+                        0 -> RoundedCornerShape(
+                            topStart = cornerRadius,
+                            topEnd = 0.dp,
+                            bottomStart = cornerRadius,
+                            bottomEnd = 0.dp
+                        )
+                        // right outer button
+                        uiState.colorThemeOptions.size - 1 -> RoundedCornerShape(
+                            topStart = 0.dp,
+                            topEnd = cornerRadius,
+                            bottomStart = 0.dp,
+                            bottomEnd = cornerRadius
+                        )
+                        // middle button
+                        else -> RoundedCornerShape(
+                            topStart = 0.dp,
+                            topEnd = 0.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        )
+                    },
+                    border = BorderStroke(
+                        1.dp,
+                        Color(
+                            with(uiState.theme.color.border) {
+                                if (colorThemeOption.isSelected) selected else unselected
+                            }
+                        )
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        backgroundColor = Color(
+                            with(uiState.theme.color.background) {
+                                if (colorThemeOption.isSelected) clickable else unselected
+                            }
+                        )
+                    ),
+                    contentPadding = PaddingValues(0.dp),
+                ) {
+                    Box(
+                        modifier = Modifier.size(16.dp).background(
+                            color = Color(colorThemeOption.backgroundColor),
+                            shape = RoundedCornerShape(8.dp),
+                        ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "T",
+                            color = Color(colorThemeOption.textColor),
+                            fontSize = uiState.theme.font.size.small.sp,
+                            fontFamily = Fonts.NotoSans.get(),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
+        }
     }
     Spacer(Modifier.height(8.dp))
 
@@ -83,7 +172,7 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
     )
     Spacer(Modifier.height(4.dp))
     Text(
-        text = "2. Pick letters in order as in your word, except diagonally.",
+        text = "2. Pick letters in order as in your word.",
         color = Color(uiState.theme.color.text.dim),
         fontSize = uiState.theme.font.size.small.sp,
         fontFamily = Fonts.NotoSans.get(),
@@ -239,7 +328,7 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
     Spacer(Modifier.height(8.dp))
 
     Row(
-        Modifier.fillMaxWidth(),
+        Modifier.fillMaxWidth().alpha(if (uiState.isComputerDifficultyVisible) 1f else 0f),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -288,7 +377,8 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
     }
     if (uiState.isComputerDifficultyCustom) {
         Row(
-            Modifier.fillMaxWidth().height(25.dp),
+            Modifier.fillMaxWidth().height(25.dp)
+                .alpha(if (uiState.isComputerDifficultyVisible) 1f else 0f),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -302,7 +392,8 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
             val sliderPosition = remember {
                 mutableStateOf(uiState.customDifficultyVocabularySliderValue.toFloat())
             }
-            com.alexvt.wordgame.platform.Slider( // androidx.compose.material.Slider w. platform fix
+            com.alexvt.wordgame.platform.Slider(
+                // androidx.compose.material.Slider w. platform fix
                 modifier = Modifier.weight(1f),
                 sliderValueState = sliderPosition,
                 valueRange = 5f..100f,
@@ -332,7 +423,8 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
             )
         }
         Row(
-            Modifier.fillMaxWidth().height(25.dp),
+            Modifier.fillMaxWidth().height(25.dp)
+                .alpha(if (uiState.isComputerDifficultyVisible) 1f else 0f),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -346,7 +438,8 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
             val sliderPosition = remember {
                 mutableStateOf(uiState.customDifficultyMaxWordLengthSliderValue.toFloat())
             }
-            com.alexvt.wordgame.platform.Slider( // androidx.compose.material.Slider w. platform fix
+            com.alexvt.wordgame.platform.Slider(
+                // androidx.compose.material.Slider w. platform fix
                 modifier = Modifier.weight(1f),
                 sliderValueState = sliderPosition,
                 valueRange = 3f..15f,
@@ -379,6 +472,7 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
         Row(
             Modifier.height(45.dp).offset((-3).dp, 0.dp).fillMaxWidth()
                 .offset(3.dp, 0.dp) // compensating offsets
+                .alpha(if (uiState.isComputerDifficultyVisible) 1f else 0f)
         ) {
             val selectedIndex = uiState.computerDifficultySelectionIndex
             val cornerRadius = 5.dp

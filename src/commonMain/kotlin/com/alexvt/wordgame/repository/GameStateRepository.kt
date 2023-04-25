@@ -16,7 +16,7 @@ class GameStateRepository(
 
 
     private fun getInitialGameState(): GameState =
-        with (settingsRepository.readSettings()) {
+        with(settingsRepository.readSettings()) {
             GameState(
                 board = getInitialBoard(
                     wordText = nounsRepository.getRandomNoun(length = 5, selectionPoolSize = 1000)
@@ -24,15 +24,14 @@ class GameStateRepository(
                 player1 = Player(
                     playedWords = emptyList(),
                     isComputer = isPlayer1computer,
-                    computerMaxWordLength,
-                    computerMaxVocabularyNormalizedSize,
                 ),
                 player2 = Player(
                     playedWords = emptyList(),
                     isComputer = isPlayer2computer,
-                    computerMaxWordLength,
-                    computerMaxVocabularyNormalizedSize,
                 ),
+                computerMaxWordLength = computerDifficulty.maxWordLength,
+                computerMaxVocabularyNormalizedSize = computerDifficulty
+                    .maxVocabularyNormalizedSize,
                 playerTurn = PlayerTurn.PLAYER_1_TURN,
                 turnStage = TurnStage.PLACING_NEW_LETTER,
                 error = Error.NONE,
