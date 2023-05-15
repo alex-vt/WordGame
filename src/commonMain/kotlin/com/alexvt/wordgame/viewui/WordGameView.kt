@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -42,6 +43,7 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
             )
         }
         val uiState by viewModel.getUiStateFlow().collectAsState()
+        val uriHandler = LocalUriHandler.current
 
         // Score board
         Row {
@@ -64,22 +66,32 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
         }
         Box {
             Row {
-                Text(
-                    text = uiState.player1words.joinToString(separator = "\n"),
-                    color = Color(uiState.theme.color.text.normal),
-                    fontSize = uiState.theme.font.size.small.sp,
-                    textAlign = TextAlign.Left,
-                    fontFamily = Fonts.RobotoMono.get(),
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = uiState.player2words.joinToString(separator = "\n"),
-                    color = Color(uiState.theme.color.text.normal),
-                    fontSize = uiState.theme.font.size.small.sp,
-                    textAlign = TextAlign.Right,
-                    fontFamily = Fonts.RobotoMono.get(),
-                    modifier = Modifier.weight(1f),
-                )
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                    uiState.player1words.forEachIndexed { index, word ->
+                        Text(
+                            text = word,
+                            color = Color(uiState.theme.color.text.normal),
+                            fontSize = uiState.theme.font.size.small.sp,
+                            fontFamily = Fonts.RobotoMono.get(),
+                            modifier = Modifier.clickable {
+                                browseWord(uriHandler, word)
+                            }
+                        )
+                    }
+                }
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                    uiState.player2words.forEachIndexed { index, word ->
+                        Text(
+                            text = word,
+                            color = Color(uiState.theme.color.text.normal),
+                            fontSize = uiState.theme.font.size.small.sp,
+                            fontFamily = Fonts.RobotoMono.get(),
+                            modifier = Modifier.clickable {
+                                browseWord(uriHandler, word)
+                            }
+                        )
+                    }
+                }
             }
             FloatingActionButton(
                 modifier = Modifier.size(50.dp).align(Alignment.TopCenter),
@@ -133,7 +145,6 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                     fontSize = uiState.theme.font.size.normal.sp,
                     fontFamily = Fonts.NotoSans.get(),
                 )
-                val uriHandler = LocalUriHandler.current
                 if (uiState.notificationMessageLink.isNotBlank()) {
                     Text(
                         text = uiState.notificationMessageLink,
@@ -142,10 +153,7 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                         fontFamily = Fonts.NotoSans.get(),
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                            browseLink(
-                                uriHandler,
-                                "https://en.wiktionary.org/wiki/${uiState.notificationMessageLink}#Noun"
-                            )
+                            browseWord(uriHandler, uiState.notificationMessageLink)
                         },
                     )
                 }
@@ -505,4 +513,12 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
             }
         }
     }
+}
+
+private fun browseWord(uriHandler: UriHandler, word: String) {
+    if (word.isBlank()) return
+    browseLink(
+        uriHandler,
+        "https://en.wiktionary.org/wiki/$word#Noun"
+    )
 }
