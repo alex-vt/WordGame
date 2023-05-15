@@ -1,9 +1,33 @@
 package com.alexvt.wordgame.viewui
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -14,9 +38,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.style.TextAlign
@@ -93,17 +123,39 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                     }
                 }
             }
-            FloatingActionButton(
-                modifier = Modifier.size(50.dp).align(Alignment.TopCenter),
-                backgroundColor = Color(uiState.theme.color.background.clickable),
-                contentColor = Color(uiState.theme.color.text.inactive),
-                onClick = { viewModel.onPause() }
+            Column(
+                Modifier.align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Icon(
-                    Icons.Filled.Pause,
-                    contentDescription = "Pause Menu",
-                    modifier = Modifier.size(24.dp)
-                )
+                FloatingActionButton(
+                    modifier = Modifier.size(50.dp),
+                    backgroundColor = Color(uiState.theme.color.background.clickable),
+                    contentColor = Color(uiState.theme.color.text.inactive),
+                    onClick = { viewModel.onPause() }
+                ) {
+                    Icon(
+                        Icons.Filled.Pause,
+                        contentDescription = "Pause Menu",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                if (uiState.isRulesHintVisible) {
+                    Icon(
+                        Icons.Filled.ExpandLess,
+                        contentDescription = "Rules",
+                        tint = Color(uiState.theme.color.text.dimInactive),
+                        modifier = Modifier.padding(top = 5.dp).size(20.dp),
+                    )
+                    Text(
+                        modifier = Modifier.clickable {
+                            viewModel.onPause()
+                        },
+                        text = "Rules",
+                        fontSize = uiState.theme.font.size.normal.sp,
+                        color = Color(uiState.theme.color.text.dimInactive),
+                        fontFamily = Fonts.NotoSans.get(),
+                    )
+                }
             }
         }
         Row {
@@ -197,7 +249,8 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                                                 }
                                             )
                                         )
-                                    ).wrapContentSize(align = Alignment.Center).padding(bottom = 2.dp),
+                                    ).wrapContentSize(align = Alignment.Center)
+                                        .padding(bottom = 2.dp),
                                 )
                                 if (cell.hasArrowOut) {
                                     val angle = when {
@@ -213,7 +266,8 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                                         else -> Alignment.TopCenter // up
                                     }
                                     Canvas(
-                                        modifier = Modifier.size(10.dp).rotate(angle).align(alignment)
+                                        modifier = Modifier.size(10.dp).rotate(angle)
+                                            .align(alignment)
                                     ) {
                                         val rect = Rect(Offset.Zero, size)
                                         val arrowUpTailPath = Path().apply {
@@ -231,9 +285,12 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                                         )
                                         drawIntoCanvas { canvas ->
                                             canvas.drawOutline(
-                                                outline = Outline.Generic(arrowUpTailPath.apply { close() }),
+                                                outline = Outline.Generic(arrowUpTailPath.apply {
+                                                    close()
+                                                }),
                                                 paint = Paint().apply {
-                                                    color = Color(uiState.theme.color.border.neutral)
+                                                    color =
+                                                        Color(uiState.theme.color.border.neutral)
                                                 }
                                             )
                                         }
@@ -253,7 +310,8 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                                         else -> Alignment.TopCenter // up
                                     }
                                     Canvas(
-                                        modifier = Modifier.size(10.dp).rotate(angle).align(alignment)
+                                        modifier = Modifier.size(10.dp).rotate(angle)
+                                            .align(alignment)
                                     ) {
                                         val rect = Rect(Offset.Zero, size)
                                         val arrowUpHeadPath = Path().apply {
@@ -271,9 +329,12 @@ fun WordGameView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnviro
                                         )
                                         drawIntoCanvas { canvas ->
                                             canvas.drawOutline(
-                                                outline = Outline.Generic(arrowUpHeadPath.apply { close() }),
+                                                outline = Outline.Generic(arrowUpHeadPath.apply {
+                                                    close()
+                                                }),
                                                 paint = Paint().apply {
-                                                    color = Color(uiState.theme.color.border.neutral)
+                                                    color =
+                                                        Color(uiState.theme.color.border.neutral)
                                                 }
                                             )
                                         }

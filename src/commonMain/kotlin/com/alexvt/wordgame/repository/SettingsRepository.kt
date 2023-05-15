@@ -37,6 +37,7 @@ class SettingsRepository(
         isPlayer1computer = false,
         isPlayer2computer = true,
         computerDifficulty = difficultyPresetRepository.getDefaultDifficultyPreset(),
+        isBeginnerHintShown = true,
         theme = ThemeRecord(
             color = colorThemeRepository.getDefaultColorTheme(),
             font = defaultFontTheme
@@ -68,6 +69,7 @@ class SettingsRepository(
         settingsMutableFlow.value
 
     fun updateSettings(newSettingsRecord: SettingsRecord) {
+        if (newSettingsRecord == settingsMutableFlow.value) return // no storage overwrite
         settingsMutableFlow.tryEmit(newSettingsRecord).also {
             storageRepository.writeEntry(
                 key = storageKey,

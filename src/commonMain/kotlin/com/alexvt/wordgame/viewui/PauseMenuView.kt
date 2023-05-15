@@ -49,7 +49,7 @@ fun PauseMenuView(dependencies: AppDependencies, lifecycle: WindowLifecycleEnvir
                 fontFamily = Fonts.NotoSans.get(),
             )
             Text(
-                text = " • update 6",
+                text = " • update 7",
                 color = Color(uiState.theme.color.text.dim),
                 fontSize = uiState.theme.font.size.small.sp,
                 fontFamily = Fonts.NotoSans.get(),

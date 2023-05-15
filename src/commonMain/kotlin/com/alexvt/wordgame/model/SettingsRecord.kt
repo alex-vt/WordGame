@@ -65,5 +65,6 @@ data class SettingsRecord(
     val isPlayer1computer: Boolean,
     val isPlayer2computer: Boolean,
     val computerDifficulty: DifficultyRecord,
+    val isBeginnerHintShown: Boolean,
     val theme: ThemeRecord,
 )

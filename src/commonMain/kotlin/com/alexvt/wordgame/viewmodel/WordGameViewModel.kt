@@ -23,6 +23,7 @@ class WordGameViewModelUseCases(
     val newGameUseCase: NewGameUseCase,
     val queueAutoPlayInputsUseCase: QueueAutoPlayInputsUseCase,
     val watchNavigationalStateUseCase: WatchNavigationalStateUseCase,
+    val watchSettingsUseCase: WatchSettingsUseCase,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -66,15 +67,20 @@ class WordGameViewModel(
         val statusMessage: String,
         val isKeyboardInactive: Boolean,
         val isGameOverPopupMenuVisible: Boolean,
+        val isRulesHintVisible: Boolean,
         val theme: ThemeRecord,
     )
 
     fun getUiStateFlow(): StateFlow<UiState> =
-        useCases.watchVisualGameStateUseCase.execute(viewModelScope).map { it.toUiState() }.stateIn(
+        useCases.watchVisualGameStateUseCase.execute(viewModelScope).combine(
+            useCases.watchSettingsUseCase.execute()
+        ) { gameState, settings ->
+            gameState.toUiState(settings)
+        }.stateIn(
             viewModelScope,
             SharingStarted.Lazily,
-            initialValue = useCases.watchVisualGameStateUseCase.execute(viewModelScope)
-                .value.toUiState()
+            initialValue = useCases.watchVisualGameStateUseCase.execute(viewModelScope).value
+                .toUiState(useCases.watchSettingsUseCase.execute().value)
         )
 
     fun onCellClick(row: Int, column: Int) {
@@ -133,7 +139,9 @@ class WordGameViewModel(
         }
     }
 
-    private fun WatchVisualGameStateUseCase.VisualGameState.toUiState(): UiState {
+    private fun WatchVisualGameStateUseCase.VisualGameState.toUiState(
+        settings: SettingsRecord
+    ): UiState {
         return UiState(
             board = gameState.board.cellRows.map { cellRow ->
                 cellRow.map { cell ->
@@ -155,6 +163,7 @@ class WordGameViewModel(
                                 hasArrowOutRight = cell.directionToNext == Direction.RIGHT,
                             )
                         }
+
                         is EmptyCell -> {
                             BoardCell(
                                 isSelected = cell.isSelected,
@@ -197,6 +206,7 @@ class WordGameViewModel(
             isKeyboardInactive = useCases.isCurrentPlayerComputerUseCase.execute()
                     || gameState.turnStage == TurnStage.GAME_OVER,
             isGameOverPopupMenuVisible = gameState.turnStage == TurnStage.GAME_OVER,
+            isRulesHintVisible = settings.isBeginnerHintShown,
             theme = theme,
         )
     }
@@ -252,12 +262,15 @@ class WordGameViewModel(
             error == Error.NEW_LETTER_NOT_INCLUDED -> {
                 "New letter must be in the word"
             }
+
             error == Error.WORD_ALREADY_PLAYED -> {
                 "Already played: "
             }
+
             error == Error.WORD_NOT_ALLOWED -> {
                 "Not allowed: $wordOnBoard"
             }
+
             isShowingLastTurn -> {
                 val previousTurnPlayerName =
                     when (playerTurn) {
@@ -267,6 +280,7 @@ class WordGameViewModel(
                     }
                 "$previousTurnPlayerName word was: "
             }
+
             else -> ""
         }
     }
@@ -285,9 +299,11 @@ class WordGameViewModel(
             error == Error.WORD_ALREADY_PLAYED -> {
                 wordOnBoard
             }
+
             isShowingLastTurn -> {
                 wordOnBoard
             }
+
             else -> ""
         }
     }
@@ -306,6 +322,7 @@ class WordGameViewModel(
                     true to false
                 }
             }
+
             PlayerTurn.PLAYER_2_TURN -> {
                 if (turnStage == TurnStage.GAME_OVER) {
                     true to false // player 2 gave up, show player 1 as winner
@@ -313,6 +330,7 @@ class WordGameViewModel(
                     false to true
                 }
             }
+
             PlayerTurn.GAME_OVER -> {
                 val player1advantage =
                     player1.playedWords.getScore() - player2.playedWords.getScore()

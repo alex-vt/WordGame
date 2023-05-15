@@ -1,9 +1,14 @@
 package com.alexvt.wordgame.usecases
 
 import com.alexvt.wordgame.AppScope
-import com.alexvt.wordgame.model.*
+import com.alexvt.wordgame.model.Error
+import com.alexvt.wordgame.model.GameState
+import com.alexvt.wordgame.model.PlayerTurn
+import com.alexvt.wordgame.model.TurnStage
+import com.alexvt.wordgame.model.Word
 import com.alexvt.wordgame.repository.GameStateRepository
 import com.alexvt.wordgame.usecases.internal.CheckIfWordAllowedUseCase
+import com.alexvt.wordgame.usecases.internal.HideBeginnerHintUseCase
 import me.tatarka.inject.annotations.Inject
 
 @AppScope
@@ -12,6 +17,7 @@ class EnterPressUseCase(
     private val isCurrentPlayerComputerUseCase: IsCurrentPlayerComputerUseCase,
     private val checkIfWordAllowedUseCase: CheckIfWordAllowedUseCase,
     private val queueAutoPlayInputsUseCase: QueueAutoPlayInputsUseCase,
+    private val hideBeginnerHintUseCase: HideBeginnerHintUseCase,
     private val gameStateRepository: GameStateRepository,
 ) {
 
@@ -107,6 +113,7 @@ class EnterPressUseCase(
                 error = Error.NONE,
             )
         )
+        hideBeginnerHintUseCase.execute() // advanced enough to play a move (or changed settings)
         queueAutoPlayInputsUseCase.execute(beforeComputerMove)
     }
 
