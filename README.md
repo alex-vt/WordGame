@@ -1,6 +1,6 @@
 # Word Game
 
-A language puzzle. 
+A language puzzle. For Android, desktop, and browser. 
 
 1. Choose a place on the board. Type there a letter that's part of a word - read in any directions, like in a maze.
 2. Pick letters in order as in your word, except diagonally.
@@ -11,6 +11,14 @@ A language puzzle.
 [<img src="example/example_1.png"/>](example/example_1.png)
 [<img src="example/example_2.png"/>](example/example_2.png)
 [<img src="example/example_3.png"/>](example/example_3.png)
+
+* Click a previously played word to see its definition on Wiktionary
+* For a fine tuned level of challenge, use Custom difficulty in settings
+* Choose a color theme in settings
+
+Browser version and Android app:
+
+[<img src="example/example_4.png"/>](example/example_4.png)
 
 
 ## Example:
@@ -361,7 +369,7 @@ Signing setup:
 * Put your `keystore.jks` to the project's root folder for signing the app.
 * Create a `signing.properties` in the project's root folder with `keystore.jks` credentials:
 ```
-signingStoreLocation=../keystore.jks
+signingStoreLocation=keystore.jks
 signingStorePassword=<keystore.jks password>
 signingKeyAlias=<keystore.jks alias>
 signingKeyPassword=<keystore.jks key password>
@@ -421,10 +429,11 @@ The deployable game folder contents hosted on GitHub Pages of user `alex-vt` in 
 
 ## Development
 
-Tech keywords: Kotlin, Gradle, Jetpack Compose Multiplatform
+Tech stack: Kotlin, Compose Multiplatform
 
 Target platforms: Android, Desktop, JS/Web/Browser
 
+Build system: Gradle
 
 ## License
 
