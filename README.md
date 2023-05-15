@@ -352,6 +352,12 @@ It's a draw.
 
 </details>
 
+#### Game in action, example
+
+A computer vs computer game on Android:
+
+https://github.com/alex-vt/WordGame/assets/6236091/dfa37d87-c6c4-4523-9b0a-1afc5d993a85
+
 
 ## Build, run, play
 
