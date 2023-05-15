@@ -18,7 +18,7 @@ actual suspend fun loadTextFromResources(res: String): String =
 
 @Composable
 actual fun getImageBitmapFromResources(res: String): ImageBitmap =
-       remember {
+       remember(res) {
               val bytes = useResource("drawable/$res.png") { it.readAllBytes() }
               org.jetbrains.skia.Image.makeFromEncoded(bytes).toComposeImageBitmap()
        }

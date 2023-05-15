@@ -32,7 +32,7 @@ lateinit var appContext: Application
 @Composable
 actual fun getImageBitmapFromResources(res: String): ImageBitmap {
     val context = appContext
-    return remember {
+    return remember(res) {
         val option = BitmapFactory.Options()
         option.inPreferredConfig = Bitmap.Config.ARGB_8888
         val id = context.resources.getIdentifier(res, "drawable", context.packageName)
